@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "editorconfig.editorconfig",
+    "davidanson.vscode-markdownlint",
+    "eamodio.gitlens",
+    "me-dutour-mathieu.vscode-github-actions",
+    "ms-azure-devops.azure-pipelines",
+    "ms-dotnettools.csharp"
+  ]
+}
