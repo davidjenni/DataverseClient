@@ -7,6 +7,7 @@ using System.Diagnostics;
 using Microsoft.Crm.Sdk.Messages;
 using Microsoft.PowerPlatform.Dataverse.Client;
 using Microsoft.PowerPlatform.Dataverse.Client.Auth;
+using Microsoft.PowerPlatform.Dataverse.Client.Utils;
 
 namespace DataverseClient
 {
@@ -35,37 +36,43 @@ option: instead of passing the secret as the third parameter, set an environment
             Secret = args.Length > 2 ? args[2] : Environment.GetEnvironmentVariable("PP_BT_ENV_SECRET");
             if (string.IsNullOrWhiteSpace(Secret))
             {
-                Console.WriteLine("Missing parameter 'secret' (or set env variable: 'PA_BT_ORG_SECRET'");
+                Console.WriteLine("Missing parameter 'secret' (or set env variable: 'PP_BT_ENV_SECRET'");
                 Environment.Exit(1);
             }
         }
 
         static void Main(string[] args)
         {
-
-            var app = new Program(args);
-            var success = app.Connect();
-            Console.WriteLine($"Connected to '{app.EnvUrl}': {success}");
+            var success = new Program(args).Connect();
             Environment.Exit(success ? 0 : 1);
         }
 
         private bool Connect()
         {
-            using (var serviceClient = Create())
+            try
             {
-                if (!serviceClient.IsReady)
-                {
-                    Console.WriteLine($"ERROR: Cannot connect to org '{EnvUrl}', error: {serviceClient.LastError}");
-                    return false;
-                }
+                using var serviceClient = Create();
+                Console.WriteLine($"Connected to '{EnvUrl}'");
 
-                var response = (WhoAmIResponse) serviceClient.ExecuteOrganizationRequest(new WhoAmIRequest());
+                var response = (WhoAmIResponse)serviceClient.ExecuteOrganizationRequest(new WhoAmIRequest());
                 if (response == null)
                 {
-                   Console.WriteLine($"ERROR: Cannot execute request from '{EnvUrl}', error: {serviceClient.LastError}");
-                   return false;
+                    Console.Error.WriteLine($"{Environment.NewLine}>> ERROR: Cannot execute request from '{EnvUrl}', error: {serviceClient.LastError}");
+                    return false;
                 }
-                Console.WriteLine($"Connected as user: {serviceClient.OAuthUserId} (userId: {response.UserId}) to org: {serviceClient.ConnectedOrgUniqueName} ({response.OrganizationId}, {serviceClient.ConnectedOrgUriActual})");
+                Console.WriteLine($"Connected as user: {serviceClient.OAuthUserId} (userId: {response.UserId}) to env: {serviceClient.ConnectedOrgUniqueName} ({response.OrganizationId}, {serviceClient.ConnectedOrgUriActual})");
+            }
+            catch (DataverseConnectionException ex)
+            {
+                Console.Error.WriteLine($"{Environment.NewLine}>> ERROR connecting to env {EnvUrl}:");
+                Exception currentEx = ex;
+                do
+                {
+                    Console.Error.WriteLine($">>++ {currentEx.Message}");
+                    currentEx = currentEx.InnerException;
+                }
+                while (currentEx != null);
+                return false;
             }
             return true;
         }
