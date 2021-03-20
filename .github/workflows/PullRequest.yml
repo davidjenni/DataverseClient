@@ -8,7 +8,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-and-run:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -27,3 +27,7 @@ jobs:
     - name: Build
       run: |
         dotnet build --configuration debug DataverseClient.csproj
+
+    - name: Run
+      run: |
+        dotnet run --no-build --configuration debug https://davidjenD365-1.crm.dynamics.com 2c6d7c95-ff20-4305-b87c-b97eb8277cf5 "${{ secrets.PP_BT_ENV_SECRET }}"
