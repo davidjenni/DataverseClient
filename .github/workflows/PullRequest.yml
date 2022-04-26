@@ -22,7 +22,7 @@ jobs:
     - name: Setup dotnetCore environment
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.x'
+        dotnet-version: '6.0.x'
 
     - name: Build
       run: |
@@ -30,4 +30,4 @@ jobs:
 
     - name: Run
       run: |
-        dotnet run --no-build --configuration debug https://davidjenD365-1.crm.dynamics.com 2c6d7c95-ff20-4305-b87c-b97eb8277cf5 "${{ secrets.PP_BT_ENV_SECRET }}"
+        dotnet run --no-build --configuration debug https://ppdevtools.crm.dynamics.com 8a7729e0-2b71-4919-a89a-c789d0a9720a "${{ secrets.PP_BT_ENV_SECRET }}"
