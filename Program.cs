@@ -94,10 +94,10 @@ options:
             // clientID and redirect url are values configured in Microsoft's tenant that are functional for 3rd parties sample code
             // for more than sample use, please create specific clientID and redirect url in your PowerPlatform's AAD tenant
             var clientId = "51f81489-12ee-4a9e-aaae-a2591f45987d";
-#if NET48
-            var redirectUrl = new Uri("app://58145B91-0C36-4500-8554-080854F2AC97");
-#else
+#if NETCOREAPP
             var redirectUrl = new Uri("http://localhost");
+#else
+            var redirectUrl = new Uri("app://58145B91-0C36-4500-8554-080854F2AC97");
 #endif
 
             var builder = new DbConnectionStringBuilder
@@ -127,7 +127,6 @@ options:
                 }
             }
 
-            Console.WriteLine(builder.ConnectionString);
             return new ServiceClient(builder.ConnectionString);
         }
     }
