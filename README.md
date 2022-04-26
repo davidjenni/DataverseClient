@@ -17,8 +17,8 @@ Windows, macOS or Linux:
 
 - [git](https://git-scm.com/downloads)
 - [Visual Studio Code](https://code.visualstudio.com/Download)
-- alternative. on Windows: [VisualStudio 2019 Community](https://visualstudio.microsoft.com/downloads/)
-- [.NET Core 5.0](https://dotnet.microsoft.com/download)
+- alternative. on Windows: [VisualStudio 2020 Community](https://visualstudio.microsoft.com/downloads/)
+- [.NET Core 6.0](https://dotnet.microsoft.com/download)
 - recommended VSCode extensions:
   - [C# for VSCode (ms-dotnettools.csharp)](https://github.com/OmniSharp/omnisharp-vscode)
   - [EditorConfig for VS Code (editorconfig.editorconfig)](https://github.com/editorconfig/editorconfig-vscode)
