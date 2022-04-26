@@ -1,5 +1,10 @@
 ﻿// Copyright (c) David JENNI
 // Licensed under the MIT License.
+//
+// Execute this sample with:
+//      dotnet run -- -h
+//      dotnet run <envUrl> [usernameOrAppId [secret]]
+//
 
 using System;
 using System.Data.Common;
@@ -17,27 +22,34 @@ namespace DataverseClient
         private Uri EnvUrl { get; }
         private string UserNameOrAppId { get; }
         private string Secret { get; }
+        private PromptBehavior PromptBehavior { get; } = PromptBehavior.Always;
 
         private Program(string[] args)
         {
-            if (args.Length < 2 || (args.Length > 0 && string.CompareOrdinal(args[0], "-h") == 0))
+            if (args.Length < 1 || (args.Length > 0 && string.CompareOrdinal(args[0], "-h") == 0))
             {
                 Console.WriteLine($@"
 Usage:
-  {Process.GetCurrentProcess().ProcessName} <environmentUrl> <usernameOrAppId> [ <secret> ]
+  {Process.GetCurrentProcess().ProcessName} <environmentUrl> [<usernameOrAppId> [ <secret> ]]
 
-option: instead of passing the secret as the third parameter, set an environment variable 'PP_BT_ENV_SECRET' with that secret
+options:
+    Without username and password cmd line arguments, MSAL's AAD login dialog will prompt interactively.
+    Instead of passing the secret as the third parameter, set an environment variable 'PP_BT_ENV_SECRET' with that secret
 ");
                 Environment.Exit(1);
             }
             EnvUrl = new Uri(args[0]);
-            UserNameOrAppId = args[1];
-            IsAppUser = Guid.TryParse(UserNameOrAppId, out var _);
-            Secret = args.Length > 2 ? args[2] : Environment.GetEnvironmentVariable("PP_BT_ENV_SECRET");
-            if (string.IsNullOrWhiteSpace(Secret))
+
+            if (args.Length > 1)
             {
-                Console.WriteLine("Missing parameter 'secret' (or set env variable: 'PP_BT_ENV_SECRET'");
-                Environment.Exit(1);
+                UserNameOrAppId = args[1];
+                IsAppUser = Guid.TryParse(UserNameOrAppId, out var _);
+            }
+
+            Secret = args.Length > 2 ? args[2] : Environment.GetEnvironmentVariable("PP_BT_ENV_SECRET");
+            if (!string.IsNullOrWhiteSpace(Secret))
+            {
+                PromptBehavior = PromptBehavior.Never;
             }
         }
 
@@ -79,17 +91,20 @@ option: instead of passing the secret as the third parameter, set an environment
 
         private ServiceClient Create()
         {
-            var promptBehavior = PromptBehavior.Never;
             // clientID and redirect url are values configured in Microsoft's tenant that are functional for 3rd parties sample code
             // for more than sample use, please create specific clientID and redirect url in your PowerPlatform's AAD tenant
             var clientId = "51f81489-12ee-4a9e-aaae-a2591f45987d";
+#if NET48
             var redirectUrl = new Uri("app://58145B91-0C36-4500-8554-080854F2AC97");
+#else
+            var redirectUrl = new Uri("http://localhost");
+#endif
 
             var builder = new DbConnectionStringBuilder
             {
                 { "Url", EnvUrl.AbsoluteUri },
                 { "RedirectUri", redirectUrl.AbsoluteUri },
-                { "LoginPrompt", promptBehavior.ToString() }
+                { "LoginPrompt", PromptBehavior.ToString() }
             };
 
             Console.WriteLine($"Connecting to env: {EnvUrl.AbsoluteUri}...");
@@ -104,11 +119,15 @@ option: instead of passing the secret as the third parameter, set an environment
             {
                 Console.WriteLine($"... authN using username & password - {UserNameOrAppId}");
                 builder.Add("AuthType", "OAuth");
-                builder.Add("Username", UserNameOrAppId);
-                builder.Add("Password", Secret);
                 builder.Add("ClientId", clientId);
+                if (!string.IsNullOrWhiteSpace(UserNameOrAppId))
+                {
+                    builder.Add("Username", UserNameOrAppId);
+                    builder.Add("Password", Secret);
+                }
             }
 
+            Console.WriteLine(builder.ConnectionString);
             return new ServiceClient(builder.ConnectionString);
         }
     }
