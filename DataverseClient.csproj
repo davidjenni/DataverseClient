@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Microsoft.PowerPlatform.Dataverse.Client" Version="0.6.6" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.43.1" />
   </ItemGroup>
